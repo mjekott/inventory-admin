@@ -1,29 +1,31 @@
 "use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils';
-import { useAuth } from '@/contexts/AuthContext';
-import {
-  LayoutDashboard,
-  Package,
-  FolderOpen,
-  ShoppingCart,
-  Settings,
-  History,
-  LogOut,
-  ChevronLeft,
-  ChevronRight,
-  Users,
-  Shield,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useState } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import { cn } from '@/lib/utils';
+import {
+  ChevronLeft,
+  ChevronRight,
+  FolderOpen,
+  History,
+  LayoutDashboard,
+  LogOut,
+  Package,
+  Settings,
+  Shield,
+  ShoppingCart,
+  Users,
+} from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 
 const navigation = [
+
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['super_admin', 'admin', 'manager', 'staff'] },
+  { name: 'Pos', href: '/pos', icon: ShoppingCart, roles: ['super_admin', 'admin', 'manager', 'staff'] },
   { name: 'Inventory', href: '/inventory', icon: Package, roles: ['super_admin', 'admin', 'manager', 'staff'] },
   { name: 'Categories', href: '/categories', icon: FolderOpen, roles: ['super_admin', 'admin', 'manager'] },
   { name: 'Orders', href: '/orders', icon: ShoppingCart, roles: ['super_admin', 'admin', 'manager', 'staff'] },

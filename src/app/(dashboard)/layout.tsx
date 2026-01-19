@@ -1,15 +1,15 @@
 "use client";
 
-import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
 import { ReactNode, useEffect } from 'react';
-import { Sidebar } from './Sidebar';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import { Sidebar } from '@/components/layout/Sidebar';
 
-interface DashboardLayoutProps {
+export default function DashboardGroupLayout({
+  children,
+}: {
   children: ReactNode;
-}
-
-export function DashboardLayout({ children }: DashboardLayoutProps) {
+}) {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
 
