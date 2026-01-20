@@ -12,23 +12,25 @@ import {
   History,
   LayoutDashboard,
   LogOut,
+  Monitor,
   Package,
   Settings,
   Shield,
   ShoppingCart,
   Users,
+  UsersRound,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 const navigation = [
-
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['super_admin', 'admin', 'manager', 'staff'] },
-  { name: 'Pos', href: '/pos', icon: ShoppingCart, roles: ['super_admin', 'admin', 'manager', 'staff'] },
+  { name: 'POS Terminal', href: '/pos', icon: Monitor, roles: ['super_admin', 'admin', 'manager', 'staff'] },
   { name: 'Inventory', href: '/inventory', icon: Package, roles: ['super_admin', 'admin', 'manager', 'staff'] },
   { name: 'Categories', href: '/categories', icon: FolderOpen, roles: ['super_admin', 'admin', 'manager'] },
   { name: 'Orders', href: '/orders', icon: ShoppingCart, roles: ['super_admin', 'admin', 'manager', 'staff'] },
+  { name: 'Customers', href: '/customers', icon: UsersRound, roles: ['super_admin', 'admin', 'manager'] },
   { name: 'Audit History', href: '/audit', icon: History, roles: ['super_admin', 'admin'] },
   { name: 'User Management', href: '/users', icon: Users, roles: ['super_admin', 'admin'] },
   { name: 'Roles & Permissions', href: '/roles', icon: Shield, roles: ['super_admin', 'admin'] },
@@ -93,7 +95,7 @@ export function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
         {filteredNavigation.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
           return (
             <Link
               key={item.name}
