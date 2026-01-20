@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
+import { CategoryDrawer } from '@/components/categories/CategoryDrawer';
+import { useCategoryStore } from '@/stores/useCategoryStore';
 import { mockProducts } from '@/data/mockData';
-import { Product } from '@/types/inventory';
+import { Product, Category } from '@/types/inventory';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -33,9 +35,11 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Search, Filter, Edit2, Trash2, Package } from 'lucide-react';
+import { Plus, Search, Filter, Edit2, Trash2, Package, FolderPlus } from 'lucide-react';
 import { format } from 'date-fns';
 import { Progress } from '@/components/ui/progress';
+
+const initialCategories = ['Electronics', 'Furniture', 'Accessories', 'Stationery'];
 
 export default function InventoryPage() {
   const [products, setProducts] = useState<Product[]>(mockProducts);
@@ -43,8 +47,10 @@ export default function InventoryPage() {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [categories, setCategories] = useState<string[]>(initialCategories);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
 
-  const categories = [...new Set(products.map((p) => p.category))];
+  const { openDrawer } = useCategoryStore();
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
@@ -63,6 +69,25 @@ export default function InventoryPage() {
 
   const getStockPercentage = (product: Product) => {
     return Math.min((product.currentStock / product.maxStock) * 100, 100);
+  };
+
+  const handleCategoryCreated = (category: Category) => {
+    if (!categories.includes(category.name)) {
+      setCategories([...categories, category.name]);
+    }
+    setSelectedCategory(category.name);
+  };
+
+  const handleOpenCategoryDrawer = () => {
+    openDrawer(null, handleCategoryCreated);
+  };
+
+  const handleCategoryChange = (value: string) => {
+    if (value === 'new') {
+      handleOpenCategoryDrawer();
+    } else {
+      setSelectedCategory(value);
+    }
   };
 
   return (
@@ -199,6 +224,7 @@ export default function InventoryPage() {
           if (!open) {
             setIsAddDialogOpen(false);
             setSelectedProduct(null);
+            setSelectedCategory('');
           }
         }}
       >
@@ -237,7 +263,10 @@ export default function InventoryPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="category">Category</Label>
-                <Select defaultValue={selectedProduct?.category}>
+                <Select
+                  value={selectedCategory || selectedProduct?.category || ''}
+                  onValueChange={handleCategoryChange}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
@@ -247,7 +276,12 @@ export default function InventoryPage() {
                         {category}
                       </SelectItem>
                     ))}
-                    <SelectItem value="new">+ Add New Category</SelectItem>
+                    <SelectItem value="new" className="text-primary">
+                      <span className="flex items-center gap-2">
+                        <FolderPlus className="w-4 h-4" />
+                        Add New Category
+                      </span>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -334,6 +368,7 @@ export default function InventoryPage() {
               onClick={() => {
                 setIsAddDialogOpen(false);
                 setSelectedProduct(null);
+                setSelectedCategory('');
               }}
             >
               Cancel
@@ -344,6 +379,9 @@ export default function InventoryPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Category Drawer */}
+      <CategoryDrawer />
     </div>
   );
 }

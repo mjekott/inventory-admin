@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { CategoryDrawer } from '@/components/categories/CategoryDrawer';
+import { useCategoryStore } from '@/stores/useCategoryStore';
+import { Category } from '@/types/inventory';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -15,15 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,17 +28,8 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Pencil, Trash2, ImageIcon, Upload, FolderOpen } from 'lucide-react';
+import { Plus, Pencil, Trash2, ImageIcon, FolderOpen } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-interface Category {
-  id: string;
-  name: string;
-  description: string;
-  image?: string;
-  productCount: number;
-  createdAt: Date;
-}
 
 const initialCategories: Category[] = [
   { id: '1', name: 'Electronics', description: 'Electronic devices and accessories', productCount: 4, createdAt: new Date('2024-01-01') },
@@ -57,55 +40,22 @@ const initialCategories: Category[] = [
 
 export default function CategoriesPage() {
   const { toast } = useToast();
+  const { openDrawer } = useCategoryStore();
   const [categories, setCategories] = useState<Category[]>(initialCategories);
-  const [isAddOpen, setIsAddOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [formData, setFormData] = useState({ name: '', description: '', image: '' });
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredCategories = categories.filter(cat =>
     cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cat.description.toLowerCase().includes(searchTerm.toLowerCase())
+    (cat.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false)
   );
 
-  const handleAdd = () => {
-    if (!formData.name.trim()) {
-      toast({ title: 'Error', description: 'Category name is required', variant: 'destructive' });
-      return;
+  const handleSaveCategory = (category: Category) => {
+    const existingIndex = categories.findIndex(c => c.id === category.id);
+    if (existingIndex >= 0) {
+      setCategories(categories.map(c => c.id === category.id ? category : c));
+    } else {
+      setCategories([...categories, category]);
     }
-
-    const newCategory: Category = {
-      id: Date.now().toString(),
-      name: formData.name.trim(),
-      description: formData.description.trim(),
-      image: formData.image,
-      productCount: 0,
-      createdAt: new Date(),
-    };
-
-    setCategories([...categories, newCategory]);
-    setFormData({ name: '', description: '', image: '' });
-    setIsAddOpen(false);
-    toast({ title: 'Success', description: 'Category created successfully' });
-  };
-
-  const handleEdit = () => {
-    if (!editingCategory || !formData.name.trim()) {
-      toast({ title: 'Error', description: 'Category name is required', variant: 'destructive' });
-      return;
-    }
-
-    setCategories(categories.map(cat =>
-      cat.id === editingCategory.id
-        ? { ...cat, name: formData.name.trim(), description: formData.description.trim(), image: formData.image }
-        : cat
-    ));
-
-    setEditingCategory(null);
-    setFormData({ name: '', description: '', image: '' });
-    setIsEditOpen(false);
-    toast({ title: 'Success', description: 'Category updated successfully' });
   };
 
   const handleDelete = (id: string) => {
@@ -121,23 +71,6 @@ export default function CategoriesPage() {
 
     setCategories(categories.filter(cat => cat.id !== id));
     toast({ title: 'Success', description: 'Category deleted successfully' });
-  };
-
-  const openEditDialog = (category: Category) => {
-    setEditingCategory(category);
-    setFormData({ name: category.name, description: category.description, image: category.image || '' });
-    setIsEditOpen(true);
-  };
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData({ ...formData, image: reader.result as string });
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   return (
@@ -157,80 +90,10 @@ export default function CategoriesPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-64"
             />
-            <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-              <DialogTrigger asChild>
-                <Button onClick={() => setFormData({ name: '', description: '', image: '' })}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Category
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Add New Category</DialogTitle>
-                  <DialogDescription>
-                    Create a new product category. Upload an image to help identify it.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="name">Name *</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="Category name"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea
-                      id="description"
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      placeholder="Category description"
-                      rows={3}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Category Image</Label>
-                    <div className="border-2 border-dashed border-muted rounded-lg p-4">
-                      {formData.image ? (
-                        <div className="relative">
-                          <img
-                            src={formData.image}
-                            alt="Category preview"
-                            className="w-full h-32 object-cover rounded-md"
-                          />
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            className="absolute top-2 right-2"
-                            onClick={() => setFormData({ ...formData, image: '' })}
-                          >
-                            Remove
-                          </Button>
-                        </div>
-                      ) : (
-                        <label className="flex flex-col items-center justify-center cursor-pointer py-4">
-                          <Upload className="w-8 h-8 text-muted-foreground mb-2" />
-                          <span className="text-sm text-muted-foreground">Click to upload image</span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={handleImageUpload}
-                          />
-                        </label>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
-                  <Button onClick={handleAdd}>Create Category</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            <Button onClick={() => openDrawer()}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Category
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -285,7 +148,7 @@ export default function CategoriesPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => openEditDialog(category)}
+                          onClick={() => openDrawer(category)}
                         >
                           <Pencil className="w-4 h-4" />
                         </Button>
@@ -328,75 +191,7 @@ export default function CategoriesPage() {
         </CardContent>
       </Card>
 
-      {/* Edit Dialog */}
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Edit Category</DialogTitle>
-            <DialogDescription>
-              Update the category details below.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="edit-name">Name *</Label>
-              <Input
-                id="edit-name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Category name"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="edit-description">Description</Label>
-              <Textarea
-                id="edit-description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Category description"
-                rows={3}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label>Category Image</Label>
-              <div className="border-2 border-dashed border-muted rounded-lg p-4">
-                {formData.image ? (
-                  <div className="relative">
-                    <img
-                      src={formData.image}
-                      alt="Category preview"
-                      className="w-full h-32 object-cover rounded-md"
-                    />
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="absolute top-2 right-2"
-                      onClick={() => setFormData({ ...formData, image: '' })}
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                ) : (
-                  <label className="flex flex-col items-center justify-center cursor-pointer py-4">
-                    <Upload className="w-8 h-8 text-muted-foreground mb-2" />
-                    <span className="text-sm text-muted-foreground">Click to upload image</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleImageUpload}
-                    />
-                  </label>
-                )}
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-            <Button onClick={handleEdit}>Save Changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <CategoryDrawer onSave={handleSaveCategory} />
     </div>
   );
 }

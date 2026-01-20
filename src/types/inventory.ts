@@ -47,6 +47,15 @@ export interface Staff {
   isActive: boolean;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  description?: string;
+  image?: string;
+  productCount: number;
+  createdAt: Date;
+}
+
 export interface Product {
   id: string;
   sku: string;
@@ -131,4 +140,30 @@ export interface CompanySettings {
   taxId?: string;
   logo?: string;
   receiptFooter?: string;
+}
+
+export interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  avatar?: string;
+  isActive: boolean;
+  totalOrders: number;
+  totalSpent: number;
+  lastOrderDate?: Date;
+  createdAt: Date;
+  notes?: string;
+}
+
+export interface CustomerActivity {
+  id: string;
+  customerId: string;
+  type: 'order' | 'payment' | 'refund' | 'note' | 'status_change';
+  description: string;
+  metadata?: Record<string, unknown>;
+  createdAt: Date;
 }
