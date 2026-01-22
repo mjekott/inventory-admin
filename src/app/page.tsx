@@ -1,9 +1,9 @@
-import LoginForm from "@/auth/login/loginForm";
+import Authentication from "@/auth";
 
 const page = () => {
   return (
     <div className="flex justify-center items-center w-full min-h-screen">
-      <LoginForm />
+      <Authentication />
     </div>
   );
 };

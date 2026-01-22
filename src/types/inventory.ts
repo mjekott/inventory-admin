@@ -1,5 +1,5 @@
 // User Roles - now dynamic with super_admin as highest
-export type UserRole = 'super_admin' | 'admin' | 'manager' | 'staff' | string;
+export type UserRole = "super_admin" | "admin" | "manager" | "staff" | string;
 
 export interface User {
   id: string;
@@ -14,8 +14,14 @@ export interface User {
 }
 
 // Permissions System
-export type PermissionModule = 'inventory' | 'orders' | 'stock' | 'users' | 'reports' | 'settings';
-export type PermissionAction = 'create' | 'read' | 'update' | 'delete';
+export type PermissionModule =
+  | "inventory"
+  | "orders"
+  | "stock"
+  | "users"
+  | "reports"
+  | "settings";
+export type PermissionAction = "create" | "read" | "update" | "delete";
 
 export interface Permission {
   id: string;
@@ -75,7 +81,7 @@ export interface StockMovement {
   id: string;
   productId: string;
   productName: string;
-  type: 'inward' | 'outward' | 'adjustment';
+  type: "inward" | "outward" | "adjustment";
   quantity: number;
   previousStock: number;
   newStock: number;
@@ -93,7 +99,7 @@ export interface Order {
   customerPhone?: string;
   customerAddress?: string;
   items: OrderItem[];
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
   totalAmount: number;
   tax?: number;
   discount?: number;
@@ -115,7 +121,7 @@ export interface OrderItem {
 export interface AuditLog {
   id: string;
   action: string;
-  entityType: 'product' | 'order' | 'stock' | 'user' | 'role' | 'permission';
+  entityType: "product" | "order" | "stock" | "user" | "role" | "permission";
   entityId: string;
   details: string;
   userId: string;
@@ -162,8 +168,44 @@ export interface Customer {
 export interface CustomerActivity {
   id: string;
   customerId: string;
-  type: 'order' | 'payment' | 'refund' | 'note' | 'status_change';
+  type: "order" | "payment" | "refund" | "note" | "status_change";
   description: string;
   metadata?: Record<string, unknown>;
   createdAt: Date;
+}
+
+export interface SessionPayload {
+  userId: string;
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: Date;
+  role: string;
+}
+
+export interface LoginState {
+  success?: boolean;
+
+  fieldErrors?: {
+    email?: string[];
+    password?: string[];
+  };
+
+  formError?: string;
+}
+
+export interface LoginResponse {
+  message: string;
+  data: {
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      role: {
+        code: string;
+      };
+    };
+    accessToken: string;
+    refreshToken: string;
+    refreshTokenExpires: string;
+  };
 }

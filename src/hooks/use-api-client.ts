@@ -1,36 +1,27 @@
 import { api } from "@/lib/apiClient";
-import { AxiosRequestConfig, Method } from "axios";
-
-export type APIOptions = AxiosRequestConfig & {
-  data?: any;
-};
 
 export async function apiRequest<T>(
-  method: Method,
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
   url: string,
-  options: APIOptions = {},
+  options: { data?: any } = {},
 ): Promise<T> {
-  let response;
-
-  switch (method.toUpperCase()) {
+  switch (method) {
     case "GET":
-      response = await api.get<T>(url, options);
-      break;
-    case "POST":
-      response = await api.post<T>(url, options.data, options);
-      break;
-    case "PUT":
-      response = await api.put<T>(url, options.data, options);
-      break;
-    case "PATCH":
-      response = await api.patch<T>(url, options.data, options);
-      break;
-    case "DELETE":
-      response = await api.delete<T>(url, options);
-      break;
-    default:
-      throw new Error(`Unsupported method: ${method}`);
-  }
+      return (await api.get(url)).data;
 
-  return response.data;
+    case "POST":
+      return (await api.post(url, options.data)).data;
+
+    case "PUT":
+      return (await api.put(url, options.data)).data;
+
+    case "PATCH":
+      return (await api.patch(url, options.data)).data;
+
+    case "DELETE":
+      return (await api.delete(url)).data;
+
+    default:
+      throw new Error("Unsupported HTTP method");
+  }
 }

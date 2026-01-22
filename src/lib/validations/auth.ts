@@ -4,3 +4,13 @@ export const loginSchema = z.object({
   email: z.string().email("Invalid email").trim(),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
+
+export const SignUpSchema = z
+  .object({
+    firstname: z.string(),
+    lastname: z.string(),
+  })
+  .merge(loginSchema);
+
+export type LoginSchema = z.infer<typeof loginSchema>;
+export type SignUpSchema = z.infer<typeof SignUpSchema>;
