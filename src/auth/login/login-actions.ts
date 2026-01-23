@@ -1,8 +1,9 @@
+"use server";
+
 import { apiRequest } from "@/hooks/use-api-client";
-import { createSession, deleteSessiion } from "@/lib/session";
+import { createSession, deleteSession } from "@/lib/session";
 import { loginSchema } from "@/lib/validations/auth";
 import { LoginResponse, LoginState } from "@/types/inventory";
-import { toast } from "sonner";
 
 export async function login(
   prevState: LoginState | undefined,
@@ -39,14 +40,15 @@ export async function login(
       refreshToken,
       expiresAt: new Date(refreshTokenExpires),
     });
-    toast(response.message, { position: "top-center" });
-    return { success: true };
+
+    return { success: user.isActive, message: response.message };
   } catch (err) {
-    console.error("LOGIN ERROR:", err);
+    const safeMessage = err instanceof Error ? err.message : "Unknown error";
+    console.error("LOGIN ERROR:", safeMessage);
     return { formError: "Invalid email or password" };
   }
 }
 
 export async function logout() {
-  await deleteSessiion();
+  await deleteSession();
 }

@@ -7,8 +7,8 @@ export const loginSchema = z.object({
 
 export const SignUpSchema = z
   .object({
-    firstname: z.string(),
-    lastname: z.string(),
+    firstname: z.string().min(1, "First name is required"),
+    lastname: z.string().min(1, "Last name is required"),
   })
   .merge(loginSchema);
 

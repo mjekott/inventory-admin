@@ -180,11 +180,12 @@ export interface SessionPayload {
   refreshToken: string;
   expiresAt: Date;
   role: string;
+  [key: string]: unknown;
 }
 
 export interface LoginState {
   success?: boolean;
-
+  message?: string;
   fieldErrors?: {
     email?: string[];
     password?: string[];
@@ -198,8 +199,7 @@ export interface LoginResponse {
   data: {
     user: {
       id: string;
-      name: string;
-      email: string;
+      isActive: boolean;
       role: {
         code: string;
       };

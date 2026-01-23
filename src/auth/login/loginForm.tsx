@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect } from "react";
 import { login } from "./login-actions";
-
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import SubmitButton from "../button-action";
 import { useRouter } from "next/navigation";
@@ -14,6 +14,7 @@ const LoginForm = () => {
   useEffect(() => {
     if (state?.success) {
       router.refresh();
+      toast(state.message, { position: "top-center" });
       router.push("/dashboard");
     }
   }, [state?.success]);
@@ -22,13 +23,18 @@ const LoginForm = () => {
     <div className="w-full max-w-md space-y-2">
       <form action={loginAction} className="space-y-4">
         <div className="space-y-2 mt-7">
-          <Input name="email" id="email" placeholder="Email" />
+          <Input name="email" id="email" type="email" placeholder="Email" />
           {state?.fieldErrors?.email && (
             <p className="text-sm text-red-500">{state.fieldErrors.email[0]}</p>
           )}
         </div>
         <div className="space-y-2">
-          <Input name="password" id="password" placeholder="Password" />
+          <Input
+            name="password"
+            id="password"
+            type="password"
+            placeholder="password"
+          />
           {state?.fieldErrors?.password && (
             <p className="text-sm text-red-500">
               {state.fieldErrors.password[0]}
