@@ -1,96 +1,69 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { User, UserRole, Permission } from '@/types/inventory';
-import { mockUsers, mockRoles, mockPermissions } from '@/data/mockData';
+import { User } from '@/features/auth/types';
+import ApiInstance from '@/lib/httpclient';
+import { deleteTokenPair } from '@/lib/session';
+import { ApiResponse } from '@/types/api';
+import { useQuery } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { createContext, ReactNode, useContext } from 'react';
 
 interface AuthContextType {
   user: User | null;
-  isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
-  hasPermission: (requiredRole: UserRole | UserRole[]) => boolean;
-  hasPermissionCode: (permissionCode: string | string[]) => boolean;
-  getUserPermissions: () => Permission[];
-  isSuperAdmin: () => boolean;
+  hasPermission: (permissionCode: string) => boolean;
+  logout:()=>void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const roleHierarchy: Record<string, number> = {
-  super_admin: 4,
-  admin: 3,
-  manager: 2,
-  staff: 1,
-};
+
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+ 
+  const router = useRouter()
+  const query = useQuery({
+    queryKey:["session"],
+    queryFn:()=>ApiInstance.ApiPrivateApiInstance.get<ApiResponse<User>>("/auth/profile")
+  })
 
-  const login = async (email: string, _password: string): Promise<boolean> => {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 800));
 
-    const foundUser = mockUsers.find((u) => u.email === email && u.isActive);
-    if (foundUser) {
-      setUser(foundUser);
-      return true;
-    }
-    return false;
-  };
 
-  const logout = () => {
-    setUser(null);
-  };
+  const logout = ()=>{
+    deleteTokenPair()
 
-  const hasPermission = (requiredRole: UserRole | UserRole[]): boolean => {
+    router.push("/")
+  }
+
+
+  const hasPermission = (permissionCode: string): boolean => {
     if (!user) return false;
-
-    const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
-    const userLevel = roleHierarchy[user.role] || 0;
-
-    return roles.some((role) => userLevel >= (roleHierarchy[role] || 0));
+  
+    return user.role.rolePermissions.some(
+      (rp) => rp.permission.code === permissionCode
+    );
   };
 
-  const hasPermissionCode = (permissionCode: string | string[]): boolean => {
-    if (!user) return false;
+  if(query.isLoading){
+    return <div className="h-screen w-full flex justify-center items-center">
+            <span className="absolute inset-0 flex items-center justify-center">
+            <Loader2 className="h-4 w-4 animate-spin" />
+          </span>
+    </div>
+  }
 
-    // Super admin has all permissions
-    if (user.role === 'super_admin') return true;
 
-    const userRole = mockRoles.find(r => r.id === user.roleId);
-    if (!userRole) return false;
+  const user = query.data?.data.data ?? null
 
-    const codes = Array.isArray(permissionCode) ? permissionCode : [permissionCode];
-    const userPermissions = mockPermissions.filter(p => userRole.permissions.includes(p.id));
+ 
 
-    return codes.some(code => userPermissions.some(p => p.code === code));
-  };
-
-  const getUserPermissions = (): Permission[] => {
-    if (!user) return [];
-
-    const userRole = mockRoles.find(r => r.id === user.roleId);
-    if (!userRole) return [];
-
-    return mockPermissions.filter(p => userRole.permissions.includes(p.id));
-  };
-
-  const isSuperAdmin = (): boolean => {
-    return user?.role === 'super_admin';
-  };
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: !!user,
-        login,
-        logout,
         hasPermission,
-        hasPermissionCode,
-        getUserPermissions,
-        isSuperAdmin,
+        logout
       }}
     >
       {children}

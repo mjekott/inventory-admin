@@ -1,23 +1,18 @@
 "use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { mockCustomers } from '@/data/mockData';
-import { Customer } from '@/types/inventory';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -26,25 +21,31 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  Search,
-  Filter,
-  MoreHorizontal,
-  Eye,
-  UserX,
-  UserCheck,
-  Mail,
-  Phone,
-  Users,
-} from 'lucide-react';
-import { format } from 'date-fns';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { mockCustomers } from '@/data/mockData';
+import { PageGuard } from '@/features/auth/components/PageGuard';
 import { useToast } from '@/hooks/use-toast';
+import { Customer } from '@/types/inventory';
+import { format } from 'date-fns';
+import {
+  Eye,
+  Filter,
+  Mail,
+  MoreHorizontal,
+  Phone,
+  Search,
+  UserCheck,
+  Users,
+  UserX,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export default function CustomersPage() {
   const router = useRouter();
@@ -92,7 +93,8 @@ export default function CustomersPage() {
   const totalSpent = customers.reduce((sum, c) => sum + c.totalSpent, 0);
 
   return (
-    <div className="space-y-6">
+<PageGuard permissions={["customer:create"]}>
+<div className="space-y-6">
       <PageHeader
         title="Customers"
         description="Manage your customer relationships and view purchase history"
@@ -297,5 +299,6 @@ export default function CustomersPage() {
         </CardContent>
       </Card>
     </div>
+</PageGuard>
   );
 }

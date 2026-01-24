@@ -1,23 +1,10 @@
 "use client";
 
-import { useState } from 'react';
+import { CategoryDrawer } from '@/components/categories/CategoryDrawer';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
-import { CategoryDrawer } from '@/components/categories/CategoryDrawer';
-import { useCategoryStore } from '@/stores/useCategoryStore';
-import { mockProducts } from '@/data/mockData';
-import { Product, Category } from '@/types/inventory';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import {
   Dialog,
   DialogContent,
@@ -26,6 +13,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
 import {
   Select,
   SelectContent,
@@ -33,11 +23,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Search, Filter, Edit2, Trash2, Package, FolderPlus } from 'lucide-react';
+import { mockProducts } from '@/data/mockData';
+import { PageGuard } from '@/features/auth/components/PageGuard';
+import { useCategoryStore } from '@/stores/useCategoryStore';
+import { Category, Product } from '@/types/inventory';
 import { format } from 'date-fns';
-import { Progress } from '@/components/ui/progress';
+import { Edit2, Filter, FolderPlus, Package, Plus, Search, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 
 const initialCategories = ['Electronics', 'Furniture', 'Accessories', 'Stationery'];
 
@@ -91,7 +92,8 @@ export default function InventoryPage() {
   };
 
   return (
-    <div className="space-y-6">
+ <PageGuard permissions={["inventory:create"]}>
+     <div className="space-y-6">
       <PageHeader
         title="Inventory"
         description="Manage your products and stock levels"
@@ -383,5 +385,6 @@ export default function InventoryPage() {
       {/* Category Drawer */}
       <CategoryDrawer />
     </div>
+ </PageGuard>
   );
 }

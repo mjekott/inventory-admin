@@ -20,45 +20,87 @@ import {
   Users,
   UsersRound,
 } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['super_admin', 'admin', 'manager', 'staff'] },
-  { name: 'POS Terminal', href: '/pos', icon: Monitor, roles: ['super_admin', 'admin', 'manager', 'staff'] },
-  { name: 'Inventory', href: '/inventory', icon: Package, roles: ['super_admin', 'admin', 'manager', 'staff'] },
-  { name: 'Categories', href: '/categories', icon: FolderOpen, roles: ['super_admin', 'admin', 'manager'] },
-  { name: 'Orders', href: '/orders', icon: ShoppingCart, roles: ['super_admin', 'admin', 'manager', 'staff'] },
-  { name: 'Customers', href: '/customers', icon: UsersRound, roles: ['super_admin', 'admin', 'manager'] },
-  { name: 'Audit History', href: '/audit', icon: History, roles: ['super_admin', 'admin'] },
-  { name: 'User Management', href: '/users', icon: Users, roles: ['super_admin', 'admin'] },
-  { name: 'Roles & Permissions', href: '/roles', icon: Shield, roles: ['super_admin', 'admin'] },
-  { name: 'Settings', href: '/settings', icon: Settings, roles: ['super_admin', 'admin'] },
+  {
+    name: 'Dashboard',
+    href: '/',
+    icon: LayoutDashboard,
+    permissions: [],
+  },
+  {
+    name: 'POS Terminal',
+    href: '/dashboard/pos',
+    icon: Monitor,
+    permissions: ["orders:create"],
+  },
+  {
+    name: 'Inventory',
+    href: '/dashboard/inventory',
+    icon: Package,
+    permissions: ["inventory:create"],
+  },
+  {
+    name: 'Categories',
+    href: '/dashboard/categories',
+    icon: FolderOpen,
+    permissions: ["inventory:create"],
+  },
+  {
+    name: 'Orders',
+    href: '/dashboard/orders',
+    icon: ShoppingCart,
+    permissions: ["orders:create"],
+  },
+  {
+    name: 'Customers',
+    href: '/dashboard/customers',
+    icon: UsersRound,
+    permissions: ["customers:create"],
+  },
+  {
+    name: 'Audit History',
+    href: '/dashboard/audit',
+    icon: History,
+    permissions: ["settings:read"],
+  },
+  {
+    name: 'User Management',
+    href: '/dashboard/users',
+    icon: Users,
+    permissions: ["users:create"],
+  },
+  {
+    name: 'Roles & Permissions',
+    href: '/dashboard/roles',
+    icon: Shield,
+    permissions: [],
+  },
+  {
+    name: 'Settings',
+    href: '/dashboard/settings',
+    icon: Settings,
+    permissions: ["settings:create"],
+  },
 ];
-
 export function Sidebar() {
   const pathname = usePathname();
-  const { user, logout, hasPermission } = useAuth();
+  const { user, logout,hasPermission} = useAuth();
   const [collapsed, setCollapsed] = useState(false);
 
-  const filteredNavigation = navigation.filter((item) =>
-    hasPermission(item.roles as string[])
-  );
-
-  const getRoleBadgeVariant = (role: string) => {
-    switch (role) {
-      case 'super_admin':
-        return 'destructive';
-      case 'admin':
-        return 'default';
-      case 'manager':
-        return 'secondary';
-      default:
-        return 'outline';
+  const filteredNavigation = navigation.filter((item) => {
+    // No permissions means allow
+    if (!item.permissions || item.permissions.length === 0) {
+      return true;
     }
-  };
+  
+    // At least one permission must match
+    return item.permissions.some(hasPermission);
+  });
+
 
   return (
     <div
@@ -71,9 +113,8 @@ export function Sidebar() {
       <div className="flex h-16 items-center justify-between px-4 border-b border-sidebar-border">
         {!collapsed && (
           <div className="flex items-center g">
-                  <Image src="/logo.png" alt='logo'  className='size-[60px]'   width={150} height={150}/>
             <span className="font-semibold text-sidebar-accent-foreground">
-              Vendiax
+             Inventory
             </span>
           </div>
         )}
@@ -138,10 +179,9 @@ export function Sidebar() {
                   {user.name}
                 </p>
                 <Badge
-                  variant={getRoleBadgeVariant(user.role)}
                   className="text-[10px] px-1.5 py-0 capitalize"
                 >
-                  {user.role}
+                  {user.role.name}
                 </Badge>
               </div>
             )}
