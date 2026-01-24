@@ -11,7 +11,7 @@ import { createContext, ReactNode, useContext } from 'react';
 
 interface AuthContextType {
   user: User | null;
-  hasPermission: () => boolean;
+  hasPermission: (permissionCode: string) => boolean;
   logout:()=>void
 }
 
@@ -36,9 +36,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
 
-
-  const hasPermission = (): boolean => {
-    return true
+  const hasPermission = (permissionCode: string): boolean => {
+    if (!user) return false;
+  
+    return user.role.rolePermissions.some(
+      (rp) => rp.permission.code === permissionCode
+    );
   };
 
   if(query.isLoading){

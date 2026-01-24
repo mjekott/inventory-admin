@@ -1,20 +1,10 @@
 "use client";
 
-import { useState } from 'react';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { mockRoles, mockPermissions } from '@/data/mockData';
-import { Role, Permission, PermissionModule } from '@/types/inventory';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -23,30 +13,40 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import {
-  Plus,
-  Edit,
-  Trash2,
-  Shield,
-  Key,
-  Package,
-  ShoppingCart,
-  Layers,
-  Users,
-  FileText,
-  Settings,
-  Lock,
-} from 'lucide-react';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { mockPermissions, mockRoles } from '@/data/mockData';
+import { PageGuard } from '@/features/auth/components/PageGuard';
+import { Permission, PermissionModule, Role } from '@/types/inventory';
 import { format } from 'date-fns';
+import {
+  Edit,
+  FileText,
+  Key,
+  Layers,
+  Lock,
+  Package,
+  Plus,
+  Settings,
+  Shield,
+  ShoppingCart,
+  Trash2,
+  Users,
+} from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
 
 const moduleIcons: Record<PermissionModule, React.ElementType> = {
   inventory: Package,
@@ -67,7 +67,7 @@ const moduleLabels: Record<PermissionModule, string> = {
 };
 
 export default function RolesPermissionsPage() {
-  const { hasPermission, isSuperAdmin } = useAuth();
+ 
   const [roles] = useState<Role[]>(mockRoles);
   const [permissions] = useState<Permission[]>(mockPermissions);
   const [isCreateRoleOpen, setIsCreateRoleOpen] = useState(false);
@@ -82,19 +82,7 @@ export default function RolesPermissionsPage() {
     permissions: [] as string[],
   });
 
-  if (!hasPermission(['admin', 'super_admin'])) {
-    return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <div className="text-center">
-          <Shield className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
-          <p className="text-muted-foreground">
-            You need administrator privileges to manage roles and permissions.
-          </p>
-        </div>
-      </div>
-    );
-  }
+
 
   const groupedPermissions = permissions.reduce((acc, perm) => {
     if (!acc[perm.module]) {
@@ -197,17 +185,16 @@ export default function RolesPermissionsPage() {
   };
 
   return (
-    <div className="space-y-6">
+<PageGuard permissions={["role:create"]}>
+<div className="space-y-6">
       <PageHeader
         title="Roles & Permissions"
         description="Manage user roles and configure access permissions"
         action={
-          isSuperAdmin() ? (
-            <Button onClick={() => setIsCreateRoleOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Create Role
-            </Button>
-          ) : undefined
+          <Button onClick={() => setIsCreateRoleOpen(true)}>
+          <Plus className="w-4 h-4 mr-2" />
+          Create Role
+        </Button>
         }
       />
 
@@ -264,8 +251,7 @@ export default function RolesPermissionsPage() {
                     >
                       View
                     </Button>
-                    {isSuperAdmin() && (
-                      <>
+                    <>
                         <Button
                           variant="outline"
                           size="sm"
@@ -284,7 +270,6 @@ export default function RolesPermissionsPage() {
                           </Button>
                         )}
                       </>
-                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -520,5 +505,6 @@ export default function RolesPermissionsPage() {
         </DialogContent>
       </Dialog>
     </div>
+</PageGuard>
   );
 }

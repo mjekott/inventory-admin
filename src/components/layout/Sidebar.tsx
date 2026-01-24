@@ -25,24 +25,81 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard, roles: ['super_admin', 'admin', 'manager', 'staff'] },
-  { name: 'POS Terminal', href: '/dashboard/pos', icon: Monitor, roles: ['super_admin', 'admin', 'manager', 'staff'] },
-  { name: 'Inventory', href: '/dashboard/inventory', icon: Package, roles: ['super_admin', 'admin', 'manager', 'staff'] },
-  { name: 'Categories', href: '/dashboard/categories', icon: FolderOpen, roles: ['super_admin', 'admin', 'manager'] },
-  { name: 'Orders', href: '/dashboard/orders', icon: ShoppingCart, roles: ['super_admin', 'admin', 'manager', 'staff'] },
-  { name: 'Customers', href: '/dashboard/customers', icon: UsersRound, roles: ['super_admin', 'admin', 'manager'] },
-  { name: 'Audit History', href: '/dashboard/audit', icon: History, roles: ['super_admin', 'admin'] },
-  { name: 'User Management', href: '/dashboard/users', icon: Users, roles: ['super_admin', 'admin'] },
-  { name: 'Roles & Permissions', href: '/dashboard/roles', icon: Shield, roles: ['super_admin', 'admin'] },
-  { name: 'Settings', href: '/dashboard/settings', icon: Settings, roles: ['super_admin', 'admin'] },
+  {
+    name: 'Dashboard',
+    href: '/',
+    icon: LayoutDashboard,
+    permissions: [],
+  },
+  {
+    name: 'POS Terminal',
+    href: '/dashboard/pos',
+    icon: Monitor,
+    permissions: ["orders:create"],
+  },
+  {
+    name: 'Inventory',
+    href: '/dashboard/inventory',
+    icon: Package,
+    permissions: ["inventory:create"],
+  },
+  {
+    name: 'Categories',
+    href: '/dashboard/categories',
+    icon: FolderOpen,
+    permissions: ["inventory:create"],
+  },
+  {
+    name: 'Orders',
+    href: '/dashboard/orders',
+    icon: ShoppingCart,
+    permissions: ["orders:create"],
+  },
+  {
+    name: 'Customers',
+    href: '/dashboard/customers',
+    icon: UsersRound,
+    permissions: ["customers:create"],
+  },
+  {
+    name: 'Audit History',
+    href: '/dashboard/audit',
+    icon: History,
+    permissions: ["settings:read"],
+  },
+  {
+    name: 'User Management',
+    href: '/dashboard/users',
+    icon: Users,
+    permissions: ["users:create"],
+  },
+  {
+    name: 'Roles & Permissions',
+    href: '/dashboard/roles',
+    icon: Shield,
+    permissions: [],
+  },
+  {
+    name: 'Settings',
+    href: '/dashboard/settings',
+    icon: Settings,
+    permissions: ["settings:create"],
+  },
 ];
-
 export function Sidebar() {
   const pathname = usePathname();
-  const { user, logout} = useAuth();
+  const { user, logout,hasPermission} = useAuth();
   const [collapsed, setCollapsed] = useState(false);
 
-  const filteredNavigation = navigation;
+  const filteredNavigation = navigation.filter((item) => {
+    // No permissions means allow
+    if (!item.permissions || item.permissions.length === 0) {
+      return true;
+    }
+  
+    // At least one permission must match
+    return item.permissions.some(hasPermission);
+  });
 
 
   return (
