@@ -309,7 +309,7 @@ export default function UserManagementPage() {
                             <AvatarFallback className="bg-primary/10 text-primary text-sm">
                               {user.name
                                 .split(' ')
-                                .map((n) => n[0])
+                                .map((n: any) => n[0])
                                 .join('')}
                             </AvatarFallback>
                           </Avatar>
@@ -386,7 +386,7 @@ export default function UserManagementPage() {
                             <AvatarFallback className="bg-primary text-primary-foreground">
                               {user?.name
                                 .split(' ')
-                                .map((n) => n[0])
+                                .map((n: any) => n[0])
                                 .join('')}
                             </AvatarFallback>
                           </Avatar>

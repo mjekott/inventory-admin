@@ -23,9 +23,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { AuthResponse } from "@/features/auth/types";
 import useApiManager from "@/hooks/useApiManager";
 import { setAuthTokenPair } from "@/lib/session";
+import { AuthResponseDto, LoginDto } from "@/types/api.schemas";
+import { ApiResponse } from "@/types/general";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -43,7 +44,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 const LoginForm = ()=> {
   const router = useRouter();
   const queryClient = useQueryClient()
-  const {mutation,isLoading,} = useApiManager<AuthResponse>({
+  const {mutation,isLoading,} = useApiManager<ApiResponse<AuthResponseDto>,undefined,LoginDto>({
     endpoint:"/auth/login",
     method:"POST",
   })

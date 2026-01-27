@@ -1,7 +1,7 @@
 
 import ApiInstance from "@/lib/httpclient";
 import { errorMessage } from "@/lib/utils";
-import { ApiResponse } from "@/types/api";
+import { ApiResponse } from "@/types/general";
 import {
   useMutation,
   UseMutationResult,
