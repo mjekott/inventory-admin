@@ -1,12 +1,10 @@
 "use client";
 
 import { PageHeader } from '@/components/shared/PageHeader';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
 import {
   Select,
   SelectContent,
@@ -14,40 +12,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { PageGuard } from '@/features/auth/components/PageGuard';
 import {
   Bell,
-  Shield,
-  Database,
-  Users,
   Building,
+  Database,
   Save,
+  Users
 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 export default function SettingsPage() {
-  const { hasPermission } = useAuth();
-
-  if (!hasPermission('admin')) {
-    return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <div className="text-center">
-          <Shield className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
-          <p className="text-muted-foreground">
-            You need administrator privileges to access settings.
-          </p>
-        </div>
-      </div>
-    );
-  }
+ 
 
   const handleSave = () => {
     toast.success('Settings saved successfully!');
   };
 
   return (
-    <div className="space-y-6">
+  <PageGuard permissions={["settings:create"]}>
+      <div className="space-y-6">
       <PageHeader
         title="Settings"
         description="Configure system preferences and notifications"
@@ -269,5 +255,6 @@ export default function SettingsPage() {
         </Card>
       </div>
     </div>
+  </PageGuard>
   );
 }

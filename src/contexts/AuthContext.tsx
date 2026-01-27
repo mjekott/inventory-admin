@@ -1,17 +1,19 @@
 "use client";
 
-import { User } from '@/features/auth/types';
+
 import ApiInstance from '@/lib/httpclient';
 import { deleteTokenPair } from '@/lib/session';
-import { ApiResponse } from '@/types/api';
+import { ProfileResponseDto, } from '@/types/api.schemas';
+import { ApiResponse } from '@/types/general';
 import { useQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { createContext, ReactNode, useContext } from 'react';
+;
 
 interface AuthContextType {
-  user: User | null;
-  hasPermission: () => boolean;
+  user: ProfileResponseDto["user"] | null;
+  hasPermission: (permissionCode: string) => boolean;
   logout:()=>void
 }
 
@@ -24,7 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter()
   const query = useQuery({
     queryKey:["session"],
-    queryFn:()=>ApiInstance.ApiPrivateApiInstance.get<ApiResponse<User>>("/auth/profile")
+    queryFn:()=>ApiInstance.ApiPrivateApiInstance.get<ApiResponse<ProfileResponseDto>>("/auth/profile")
   })
 
 
@@ -36,9 +38,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
 
-
-  const hasPermission = (): boolean => {
-    return true
+  const hasPermission = (permissionCode: string): boolean => {
+    if (!query.data?.data.data.permissions) return false;
+  
+    return query.data?.data.data.permissions.some(
+      (rp) => rp === permissionCode
+    )
   };
 
   if(query.isLoading){
@@ -50,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
 
-  const user = query.data?.data.data ?? null
+  const user = query.data?.data.data.user ?? null
 
  
 

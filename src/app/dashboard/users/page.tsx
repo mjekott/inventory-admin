@@ -1,20 +1,10 @@
 "use client";
 
-import { useState } from 'react';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { mockUsers, mockRoles, mockStaff } from '@/data/mockData';
-import { User, Staff } from '@/types/inventory';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import {
   Dialog,
   DialogContent,
@@ -23,6 +13,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -30,29 +22,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Plus,
-  Search,
-  Edit,
-  UserX,
-  UserCheck,
-  Users,
-  Shield,
-  Mail,
-  Phone,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { mockRoles, mockStaff, mockUsers } from '@/data/mockData';
+import { PageGuard } from '@/features/auth/components/PageGuard';
+import { Staff, User } from '@/types/inventory';
+import { format } from 'date-fns';
+import {
   Building,
   Calendar,
+  Edit,
+  Mail,
+  Phone,
+  Plus,
+  Search,
+  Shield,
+  UserCheck,
+  Users,
+  UserX,
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
 
 export default function UserManagementPage() {
-  const { hasPermission, isSuperAdmin } = useAuth();
+
   const [users] = useState<User[]>(mockUsers);
   const [staff] = useState<Staff[]>(mockStaff);
   const [searchTerm, setSearchTerm] = useState('');
@@ -71,19 +71,7 @@ export default function UserManagementPage() {
     phone: '',
   });
 
-  if (!hasPermission(['admin', 'super_admin'])) {
-    return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <div className="text-center">
-          <Shield className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
-          <p className="text-muted-foreground">
-            You need administrator privileges to access user management.
-          </p>
-        </div>
-      </div>
-    );
-  }
+
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
@@ -182,7 +170,8 @@ export default function UserManagementPage() {
   };
 
   return (
-    <div className="space-y-6">
+ <PageGuard>
+     <div className="space-y-6">
       <PageHeader
         title="User Management"
         description="Manage system users, staff, and role assignments"
@@ -320,7 +309,7 @@ export default function UserManagementPage() {
                             <AvatarFallback className="bg-primary/10 text-primary text-sm">
                               {user.name
                                 .split(' ')
-                                .map((n) => n[0])
+                                .map((n: any) => n[0])
                                 .join('')}
                             </AvatarFallback>
                           </Avatar>
@@ -354,7 +343,7 @@ export default function UserManagementPage() {
                             variant="ghost"
                             size="icon"
                             onClick={() => openEditDialog(user)}
-                            disabled={user.role === 'super_admin' && !isSuperAdmin()}
+                       
                           >
                             <Edit className="w-4 h-4" />
                           </Button>
@@ -397,7 +386,7 @@ export default function UserManagementPage() {
                             <AvatarFallback className="bg-primary text-primary-foreground">
                               {user?.name
                                 .split(' ')
-                                .map((n) => n[0])
+                                .map((n: any) => n[0])
                                 .join('')}
                             </AvatarFallback>
                           </Avatar>
@@ -496,20 +485,7 @@ export default function UserManagementPage() {
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockRoles
-                    .filter((r) => isSuperAdmin() || r.code !== 'super_admin')
-                    .map((role) => (
-                      <SelectItem key={role.id} value={role.id}>
-                        <div className="flex items-center gap-2">
-                          <span>{role.name}</span>
-                          {role.isSystem && (
-                            <Badge variant="outline" className="text-[10px] px-1">
-                              System
-                            </Badge>
-                          )}
-                        </div>
-                      </SelectItem>
-                    ))}
+                 
                 </SelectContent>
               </Select>
             </div>
@@ -564,5 +540,6 @@ export default function UserManagementPage() {
         </DialogContent>
       </Dialog>
     </div>
+ </PageGuard>
   );
 }
