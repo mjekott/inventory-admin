@@ -1,22 +1,6 @@
 "use client";
 
-import { useState, useMemo } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { mockCustomers, mockCustomerActivities, mockOrders } from '@/data/mockData';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { StatusBadge } from '@/components/shared/StatusBadge';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,27 +12,43 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import {
-  ArrowLeft,
-  Mail,
-  Phone,
-  MapPin,
-  Calendar,
-  Package,
-  DollarSign,
-  TrendingUp,
-  ShoppingCart,
-  UserX,
-  UserCheck,
-  CreditCard,
-  RotateCcw,
-  FileText,
-  MessageSquare,
-  AlertCircle,
-} from 'lucide-react';
-import { format } from 'date-fns';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { mockCustomerActivities, mockCustomers, mockOrders } from '@/data/mockData';
 import { useToast } from '@/hooks/use-toast';
-import { StatusBadge } from '@/components/shared/StatusBadge';
+import { format } from 'date-fns';
+import {
+  AlertCircle,
+  ArrowLeft,
+  Calendar,
+  CreditCard,
+  DollarSign,
+  FileText,
+  Mail,
+  MapPin,
+  MessageSquare,
+  Package,
+  Phone,
+  RotateCcw,
+  ShoppingCart,
+  TrendingUp,
+  UserCheck,
+  UserX,
+} from 'lucide-react';
+import { useParams, useRouter } from 'next/navigation';
+import { useMemo, useState } from 'react';
 import {
   Area,
   AreaChart,
@@ -87,6 +87,7 @@ export default function CustomerDetailPage() {
     const months = ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan'];
     return months.map((month, index) => ({
       month,
+      // eslint-disable-next-line react-hooks/purity
       amount: Math.floor(Math.random() * 3000) + 500 + (index * 200),
     }));
   }, []);

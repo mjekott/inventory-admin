@@ -23,3 +23,14 @@ export const errorMessage = (error: any): string => {
   return "Oops!! something went wrong";
  }
 };
+
+export const formatAmount = (amount: number | string | undefined) => {
+  const formatter = new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+  return formatter.format(Number(amount ?? 0));
+};

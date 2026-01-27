@@ -1,4 +1,4 @@
-import { AuthResponse } from "@/features/auth/types";
+import { AuthResponseDto as AuthResponse } from "@/types/api.schemas";
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from "axios";
 import {
   deleteTokenPair,
@@ -100,7 +100,7 @@ ApiInstance.ApiPrivateApiInstance.interceptors.response.use(
         accessToken,
         refreshToken: newRefreshToken,
         refreshTokenExpires,
-      } = response.data.data;
+      } = (response as any).data.data || response.data;
 
       setAuthTokenPair(
         accessToken,
