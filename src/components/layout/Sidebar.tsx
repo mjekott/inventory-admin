@@ -27,7 +27,7 @@ import { useState } from 'react';
 const navigation = [
   {
     name: 'Dashboard',
-    href: '/',
+    href: '/dashboard',
     icon: LayoutDashboard,
     permissions: [],
   },
@@ -181,7 +181,7 @@ export function Sidebar() {
                 <Badge
                   className="text-[10px] px-1.5 py-0 capitalize"
                 >
-                  {user.role.name}
+                  {user.role?.name}
                 </Badge>
               </div>
             )}

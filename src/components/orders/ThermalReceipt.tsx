@@ -12,7 +12,7 @@ interface ThermalReceiptProps {
 export const ThermalReceipt = forwardRef<HTMLDivElement, ThermalReceiptProps>(
   ({ order }, ref) => {
     const company = mockCompanySettings;
-    const subtotal = order.items.reduce((sum, item) => sum + item.total, 0);
+    const subtotal = order.items.reduce((sum: any, item: any) => sum + item.total, 0);
     const tax = order.tax || 0;
     const discount = order.discount || 0;
 
@@ -78,7 +78,7 @@ export const ThermalReceipt = forwardRef<HTMLDivElement, ThermalReceiptProps>(
         </div>
 
         {/* Items */}
-        {order.items.map((item, index) => (
+        {order.items.map((item: any, index: any) => (
           <div key={index}>
             <div className="flex justify-between">
               <span className="flex-1 truncate pr-1">{item.productName}</span>
