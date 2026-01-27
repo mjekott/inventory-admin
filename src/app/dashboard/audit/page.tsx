@@ -1,18 +1,8 @@
 "use client";
 
-import { useState } from 'react';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { mockAuditLogs } from '@/data/mockData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import {
   Select,
   SelectContent,
@@ -21,17 +11,28 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  Search,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { mockAuditLogs } from '@/data/mockData';
+import { PageGuard } from '@/features/auth/components/PageGuard';
+import { format } from 'date-fns';
+import {
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  Clock,
   Filter,
   History,
   Package,
+  Search,
   ShoppingCart,
-  ArrowDownToLine,
-  ArrowUpFromLine,
   User,
-  Clock,
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { useState } from 'react';
 
 const actionIcons: Record<string, { icon: React.ElementType; color: string; bg: string }> = {
   STOCK_INWARD: { icon: ArrowDownToLine, color: 'text-success', bg: 'bg-success/10' },
@@ -61,7 +62,8 @@ export default function AuditHistoryPage() {
   });
 
   return (
-    <div className="space-y-6">
+  <PageGuard permissions={["setting:read"]}>
+      <div className="space-y-6">
       <PageHeader
         title="Audit History"
         description="Complete log of all system activities and changes"
@@ -241,5 +243,6 @@ export default function AuditHistoryPage() {
         </CardContent>
       </Card>
     </div>
+  </PageGuard>
   );
 }

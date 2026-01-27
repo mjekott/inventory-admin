@@ -1,21 +1,7 @@
 "use client";
 
-import { useState } from 'react';
-import { PageHeader } from '@/components/shared/PageHeader';
 import { CategoryDrawer } from '@/components/categories/CategoryDrawer';
-import { useCategoryStore } from '@/stores/useCategoryStore';
-import { Category } from '@/types/inventory';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { PageHeader } from '@/components/shared/PageHeader';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,9 +14,26 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Pencil, Trash2, ImageIcon, FolderOpen } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { PageGuard } from '@/features/auth/components/PageGuard';
 import { useToast } from '@/hooks/use-toast';
+import { useCategoryStore } from '@/stores/useCategoryStore';
 
+import { FolderOpen, ImageIcon, Pencil, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Category = any
 const initialCategories: Category[] = [
   { id: '1', name: 'Electronics', description: 'Electronic devices and accessories', productCount: 4, createdAt: new Date('2024-01-01') },
   { id: '2', name: 'Furniture', description: 'Office and home furniture', productCount: 2, createdAt: new Date('2024-01-01') },
@@ -74,7 +77,8 @@ export default function CategoriesPage() {
   };
 
   return (
-    <div className="space-y-6">
+<PageGuard permissions={["category:create"]}>
+<div className="space-y-6">
       <PageHeader
         title="Categories"
         description="Manage product categories and organize your inventory"
@@ -193,5 +197,6 @@ export default function CategoriesPage() {
 
       <CategoryDrawer onSave={handleSaveCategory} />
     </div>
+</PageGuard>
   );
 }

@@ -1,6 +1,16 @@
 import { cn } from '@/lib/utils';
 
-type Status = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'low' | 'normal' | 'high';
+type Status =
+  | 'pending'
+  | 'processing'
+  | 'shipped'
+  | 'delivered'
+  | 'cancelled'
+  | 'low'
+  | 'normal'
+  | 'high'
+  | 'confirmed'
+  | 'completed';
 
 interface StatusBadgeProps {
   status: Status;
@@ -47,6 +57,16 @@ const statusStyles: Record<Status, { bg: string; text: string; dot: string }> = 
     bg: 'bg-info/10',
     text: 'text-info',
     dot: 'bg-info',
+  },
+  confirmed: {
+    bg: 'bg-blue-100',   // light blue background
+    text: 'text-blue-600', // blue text
+    dot: 'bg-blue-600 animate-pulse-soft', // pulsing dot
+  },
+  completed: {
+    bg: 'bg-green-100',   // light green background
+    text: 'text-green-600', // green text
+    dot: 'bg-green-600',   // static dot
   },
 };
 

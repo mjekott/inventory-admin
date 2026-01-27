@@ -1,21 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from 'react';
+import { ReceiptActions } from '@/components/orders/ReceiptActions';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
-import { mockOrders, mockProducts } from '@/data/mockData';
-import { Order, OrderItem } from '@/types/inventory';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import {
   Dialog,
   DialogContent,
@@ -24,6 +14,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -31,22 +23,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { useAuth } from '@/contexts/AuthContext';
+import { mockOrders, mockProducts } from '@/data/mockData';
+import { PageGuard } from '@/features/auth/components/PageGuard';
+
+import { format } from 'date-fns';
+import {
+  CheckCircle,
+  Clock,
+  DollarSign,
+  Eye,
   Plus,
   Search,
-  Eye,
   ShoppingCart,
-  DollarSign,
-  Clock,
-  CheckCircle,
   Trash2,
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useState } from 'react';
 import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
-import { ReceiptActions } from '@/components/orders/ReceiptActions';
 
+type Order = any;
+type OrderItem = any;
 export default function OrdersPage() {
   const { user } = useAuth();
   const [orders] = useState<Order[]>(mockOrders);
@@ -141,7 +145,8 @@ export default function OrdersPage() {
   };
 
   return (
-    <div className="space-y-6">
+   <PageGuard permissions={["order:create"]}>
+     <div className="space-y-6">
       <PageHeader
         title="Orders"
         description="Manage customer orders and track fulfillment"
@@ -344,7 +349,7 @@ export default function OrdersPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {selectedOrder.items.map((item) => (
+                    {selectedOrder.items.map((item: { productId: Key | null | undefined; productName: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; sku: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; quantity: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; unitPrice: number; total: number; }) => (
                       <TableRow key={item.productId}>
                         <TableCell>
                           <div>
@@ -520,5 +525,6 @@ export default function OrdersPage() {
         </DialogContent>
       </Dialog>
     </div>
+   </PageGuard>
   );
 }
