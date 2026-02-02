@@ -1,12 +1,12 @@
 "use client";
 
 import { forwardRef } from 'react';
-import { Order } from '@/types/inventory';
 import { mockCompanySettings } from '@/data/mockData';
+import { formatAmount } from '@/lib/utils';
 import { format } from 'date-fns';
 
 interface ThermalReceiptProps {
-  order: Order;
+  order: any; // Accepts both POS orders and API orders with creator field
 }
 
 export const ThermalReceipt = forwardRef<HTMLDivElement, ThermalReceiptProps>(
@@ -48,7 +48,7 @@ export const ThermalReceipt = forwardRef<HTMLDivElement, ThermalReceiptProps>(
           </div>
           <div className="flex justify-between">
             <span>Cashier:</span>
-            <span>{order.createdBy}</span>
+            <span>{order.creator?.name || order.createdBy || 'N/A'}</span>
           </div>
         </div>
 
@@ -83,8 +83,8 @@ export const ThermalReceipt = forwardRef<HTMLDivElement, ThermalReceiptProps>(
             <div className="flex justify-between">
               <span className="flex-1 truncate pr-1">{item.productName}</span>
               <span className="w-8 text-right">{item.quantity}</span>
-              <span className="w-16 text-right">${item.unitPrice.toFixed(2)}</span>
-              <span className="w-16 text-right">${item.total.toFixed(2)}</span>
+              <span className="w-16 text-right">{formatAmount(item.unitPrice)}</span>
+              <span className="w-16 text-right">{formatAmount(item.total)}</span>
             </div>
             <div className="text-[8px] text-gray-600">SKU: {item.sku}</div>
           </div>
@@ -97,24 +97,24 @@ export const ThermalReceipt = forwardRef<HTMLDivElement, ThermalReceiptProps>(
         <div className="space-y-1">
           <div className="flex justify-between">
             <span>Subtotal:</span>
-            <span>${subtotal.toFixed(2)}</span>
+            <span>{formatAmount(subtotal)}</span>
           </div>
           {discount > 0 && (
             <div className="flex justify-between">
               <span>Discount:</span>
-              <span>-${discount.toFixed(2)}</span>
+              <span>-{formatAmount(discount)}</span>
             </div>
           )}
           {tax > 0 && (
             <div className="flex justify-between">
               <span>Tax:</span>
-              <span>${tax.toFixed(2)}</span>
+              <span>{formatAmount(tax)}</span>
             </div>
           )}
           <div className="border-t border-black my-1" />
           <div className="flex justify-between font-bold text-sm">
             <span>TOTAL:</span>
-            <span>${order.totalAmount.toFixed(2)}</span>
+            <span>{formatAmount(order.totalAmount)}</span>
           </div>
         </div>
 
