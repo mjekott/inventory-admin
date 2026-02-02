@@ -32,7 +32,6 @@ import {
   LayoutDashboard,
   Monitor,
   Package,
-  Ruler,
   Settings,
   Shield,
   ShoppingCart,
@@ -88,12 +87,6 @@ const manageNavigation = [
     name: 'Brands',
     href: '/dashboard/brands',
     icon: Tag,
-    permissions: ["inventory:create"],
-  },
-  {
-    name: 'Units',
-    href: '/dashboard/units',
-    icon: Ruler,
     permissions: ["inventory:create"],
   },
   {

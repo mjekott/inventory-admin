@@ -1,18 +1,20 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-"use client";
+'use client';
 
 import { PageHeader } from '@/components/shared/PageHeader';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -21,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -29,279 +32,274 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { mockCustomers } from '@/data/mockData';
-import { PageGuard } from '@/features/auth/components/PageGuard';
-import { useToast } from '@/hooks/use-toast';
-
-import { format } from 'date-fns';
+import { CustomerForm } from '@/features/customers/components/CustomerForm';
 import {
-  Eye,
-  Filter,
-  Mail,
-  MoreHorizontal,
-  Phone,
-  Search,
-  UserCheck,
-  Users,
-  UserX,
-} from 'lucide-react';
+  useCustomers,
+  useDeleteCustomer,
+} from '@/features/customers/hooks/useCustomers';
+import type { Customer } from '@/types/generated/customer';
+import { AlertCircle, Edit, Eye, Plus, Search, Trash2, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-
-type Customer =  any
 export default function CustomersPage() {
   const router = useRouter();
-  const { toast } = useToast();
-  const [customers, setCustomers] = useState<Customer[]>(mockCustomers);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  const [customerType, setCustomerType] = useState<string>('');
 
-  const filteredCustomers = customers.filter((customer) => {
-    const matchesSearch =
-      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.phone?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      statusFilter === 'all' ||
-      (statusFilter === 'active' && customer.isActive) ||
-      (statusFilter === 'inactive' && !customer.isActive);
-    return matchesSearch && matchesStatus;
+  const limit = 10;
+  const { data, isLoading, isError } = useCustomers({
+    page,
+    limit,
+    search: search || undefined,
+    customerType: customerType || undefined,
   });
+  const { mutate: deleteCustomer, isPending: isDeleting } = useDeleteCustomer();
 
-  const handleToggleStatus = (customerId: string) => {
-    setCustomers(customers.map(c => {
-      if (c.id === customerId) {
-        const newStatus = !c.isActive;
-        toast({
-          title: newStatus ? 'Customer Activated' : 'Customer Deactivated',
-          description: `${c.name} has been ${newStatus ? 'activated' : 'deactivated'}.`,
-        });
-        return { ...c, isActive: newStatus };
-      }
-      return c;
-    }));
+  const customers = data?.data || [];
+  const total = data?.total || 0;
+  const totalPages = data?.totalPages || 1;
+
+  const handleEdit = (customer: Customer) => {
+    setEditingCustomer(customer);
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+  const handleView = (id: string) => {
+    router.push(`/dashboard/customers/${id}`);
   };
 
-  const activeCount = customers.filter(c => c.isActive).length;
-  const totalSpent = customers.reduce((sum, c) => sum + c.totalSpent, 0);
+  const handleDelete = () => {
+    if (deleteId) {
+      deleteCustomer(deleteId, {
+        onSuccess: () => {
+          setDeleteId(null);
+        },
+      });
+    }
+  };
+
+  const getCustomerTypeBadge = (type: string) => {
+    switch (type) {
+      case 'wholesale':
+        return <Badge variant="secondary" className="bg-blue-100 text-blue-800">Wholesale</Badge>;
+      case 'regular':
+        return <Badge variant="secondary" className="bg-green-100 text-green-800">Regular</Badge>;
+      case 'walk-in':
+        return <Badge variant="secondary">Walk-in</Badge>;
+      default:
+        return <Badge variant="secondary">{type}</Badge>;
+    }
+  };
 
   return (
-<PageGuard permissions={["customer:create"]}>
-<div className="space-y-6">
+    <div className="space-y-6">
       <PageHeader
         title="Customers"
-        description="Manage your customer relationships and view purchase history"
+        description="Manage customer accounts and information"
+        action={
+          <Button onClick={() => setShowCreateDialog(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Customer
+          </Button>
+        }
       />
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-lg bg-primary/10">
-                <Users className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Customers</p>
-                <p className="text-2xl font-bold">{customers.length}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-lg bg-success/10">
-                <UserCheck className="w-6 h-6 text-success" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Active Customers</p>
-                <p className="text-2xl font-bold">{activeCount}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-lg bg-info/10">
-                <span className="text-info text-xl font-bold">$</span>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Revenue</p>
-                <p className="text-2xl font-bold">${totalSpent.toLocaleString()}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {isError && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Failed to load customers. Please try again.
+          </AlertDescription>
+        </Alert>
+      )}
 
-      {/* Filters */}
       <Card>
-        <CardContent className="py-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <CardContent className="p-6">
+          <div className="flex gap-4 mb-6">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
-                placeholder="Search by name, email, or phone..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search customers..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
                 className="pl-10"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-48">
-                <Filter className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="Status" />
+            <Select value={customerType || 'all'} onValueChange={(value) => setCustomerType(value === 'all' ? '' : value)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="All Types" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Customers</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="walk-in">Walk-in</SelectItem>
+                <SelectItem value="regular">Regular</SelectItem>
+                <SelectItem value="wholesale">Wholesale</SelectItem>
               </SelectContent>
             </Select>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Customers Table */}
-      <Card>
-        <CardContent className="p-0">
-          {filteredCustomers.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Users className="w-12 h-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium">No customers found</h3>
-              <p className="text-muted-foreground text-sm mt-1">
-                {searchTerm ? 'Try a different search term' : 'No customers match the selected filters'}
-              </p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Customer Number</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="w-[150px]">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-28" /></TableCell>
+                    <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                    <TableCell><Skeleton className="h-6 w-16 rounded-full" /></TableCell>
+                    <TableCell><Skeleton className="h-8 w-24" /></TableCell>
+                  </TableRow>
+                ))
+              ) : customers.length === 0 ? (
                 <TableRow>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead className="text-center">Orders</TableHead>
-                  <TableHead className="text-right">Total Spent</TableHead>
-                  <TableHead>Last Order</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableCell colSpan={7} className="text-center py-12">
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                      <Users className="w-12 h-12" />
+                      <p className="text-sm">No customers found</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowCreateDialog(true)}
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add your first customer
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredCustomers.map((customer) => (
-                  <TableRow
-                    key={customer.id}
-                    className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => router.push(`/customers/${customer.id}`)}
-                  >
+              ) : (
+                customers.map((customer) => (
+                  <TableRow key={customer.id}>
+                    <TableCell className="font-mono text-sm">
+                      {customer.customerNumber}
+                    </TableCell>
+                    <TableCell className="font-medium">{customer.name}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {customer.email || '-'}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {(customer.phone as string) || '-'}
+                    </TableCell>
+                    <TableCell>{getCustomerTypeBadge(customer.customerType)}</TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarFallback className="bg-primary/10 text-primary text-sm">
-                            {getInitials(customer.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{customer.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Since {format(customer.createdAt, 'MMM yyyy')}
-                          </p>
-                        </div>
+                      {customer.isActive ? (
+                        <Badge variant="secondary" className="bg-green-100 text-green-800">
+                          Active
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary">Inactive</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleView(customer.id)}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(customer)}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeleteId(customer.id)}
+                        >
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-1.5 text-sm">
-                          <Mail className="w-3.5 h-3.5 text-muted-foreground" />
-                          <span className="text-muted-foreground">{customer.email}</span>
-                        </div>
-                        {customer.phone && (
-                          <div className="flex items-center gap-1.5 text-sm">
-                            <Phone className="w-3.5 h-3.5 text-muted-foreground" />
-                            <span className="text-muted-foreground">{customer.phone}</span>
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {customer.city ? `${customer.city}, ${customer.country}` : '—'}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="secondary">{customer.totalOrders}</Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      ${customer.totalSpent.toLocaleString()}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {customer.lastOrderDate
-                        ? format(customer.lastOrderDate, 'MMM d, yyyy')
-                        : '—'}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={customer.isActive ? 'default' : 'secondary'}>
-                        {customer.isActive ? 'Active' : 'Inactive'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push(`/customers/${customer.id}`);
-                            }}
-                          >
-                            <Eye className="w-4 h-4 mr-2" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleToggleStatus(customer.id);
-                            }}
-                            className={customer.isActive ? 'text-destructive' : 'text-success'}
-                          >
-                            {customer.isActive ? (
-                              <>
-                                <UserX className="w-4 h-4 mr-2" />
-                                Deactivate
-                              </>
-                            ) : (
-                              <>
-                                <UserCheck className="w-4 h-4 mr-2" />
-                                Activate
-                              </>
-                            )}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                ))
+              )}
+            </TableBody>
+          </Table>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4">
+              <p className="text-sm text-muted-foreground">
+                Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total}{' '}
+                customers
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Create/Edit Dialog */}
+      <CustomerForm
+        open={showCreateDialog || !!editingCustomer}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowCreateDialog(false);
+            setEditingCustomer(null);
+          }
+        }}
+        customer={editingCustomer}
+      />
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Customer</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this customer? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
-</PageGuard>
   );
 }
